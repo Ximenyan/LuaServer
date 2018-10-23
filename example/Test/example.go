@@ -31,7 +31,7 @@ func main() {
 	G_Lua.CallLuaGFn("max", 3, []G_Lua.GoFields{
 		G_Lua.GoFields{"int", 9},
 		G_Lua.GoFields{"int", 800}})
-	G_Lua.CallLuaGFn("max", 3, []G_Lua.GoFields{
-		G_Lua.GoFields{"int", 9},
-		G_Lua.GoFields{"int", 800000}})
+	/*G_Lua.CallLuaGFn("max", 3, []G_Lua.GoFields{
+	G_Lua.GoFields{"int", 9},
+	G_Lua.GoFields{"int", 800000}})*/
 }

@@ -63,27 +63,6 @@ func SetGFunc(funcName string, f interface{}, parms GoParmTypes, rets GoParmType
 	return
 }
 
-/*设置全局 module */
-func SetGModule(modName string, fnTab ModFuncsTab, fields GoParmsField) {
-	loader := func(L *lua.LState) int {
-		// register functions to the table
-		mod := L.SetFuncs(L.NewTable(), fnTab)
-		// register other stuff
-		if fields != nil {
-			//log.Println(fields)
-			ltab := fields.GetLTab()
-			for _, kv := range ltab {
-				L.SetField(mod, kv.Name, kv.Value)
-			}
-		}
-		// returns the module
-		L.Push(mod)
-		return 1
-	}
-	lState.PreloadModule(modName, loader)
-	return
-}
-
 /*调用全局函数*/
 func CallLuaGFn(fn string, ret_num int, parms GoParmsField) []lua.LValue {
 	args := make([]lua.LValue, len(parms))
@@ -107,6 +86,36 @@ func CallLuaGFn(fn string, ret_num int, parms GoParmsField) []lua.LValue {
 		rets[idx] = lState.Get(-1 - idx)
 		idx++
 	}
-	log.Println(rets)
 	return rets
+}
+
+/*设置全局 module */
+func SetGModule(modName string, fnTab ModFuncsTab, fields GoParmsField) {
+	loader := func(L *lua.LState) int {
+		// register functions to the table
+		mod := L.SetFuncs(L.NewTable(), fnTab)
+		// register other stuff
+		if fields != nil {
+			//log.Println(fields)
+			ltab := fields.GetLTab()
+			for _, kv := range ltab {
+				L.SetField(mod, kv.Name, kv.Value)
+			}
+		}
+		// returns the module
+		L.Push(mod)
+		return 1
+	}
+	lState.PreloadModule(modName, loader)
+	return
+}
+
+/*设置用户自定义类型,暂时不支持用户类型里包含用户自定义类型属性*/
+func SetUserType(TypeName string, CreateFn lua.LGFunction, fnTab ModFuncsTab, fields GoParmsField) {
+	mt := lState.NewTypeMetatable(TypeName)
+	lState.SetGlobal(TypeName, mt)
+	// static attributes
+	lState.SetField(mt, "new", lState.NewFunction(CreateFn))
+	// methods
+	lState.SetField(mt, "__index", lState.SetFuncs(lState.NewTable(), fnTab))
 }
